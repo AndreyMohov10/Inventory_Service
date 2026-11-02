@@ -37,6 +37,7 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+  show-actuator: true
 
 logging:
   level:
@@ -50,3 +51,9 @@ logging:
       max-file-size: 10MB
       file-name-pattern: myapp-%d{yyyy-MM-dd}.%i.log
       max-history: 30
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: false
