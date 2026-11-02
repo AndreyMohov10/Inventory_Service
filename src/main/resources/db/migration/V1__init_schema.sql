@@ -6,7 +6,8 @@ CREATE TABLE products(
     price NUMERIC(100,2) NOT NULL,
     quantity INT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    version BIGINT NOT NULL
 );
 
 CREATE FUNCTION set_updated_at()
@@ -28,7 +29,7 @@ CREATE OR REPLACE FUNCTION check_quantity()
 RETURNS TRIGGER AS $$
 BEGIN
     IF NEW.quantity < 0 THEN
-        RAISE EXCEPTION 'остаток на складе не может быть отрицательным: %', NEW.quantity;
+        RAISE EXCEPTION 'остаток на складе не может быть отрицательным';
     END IF;
     RETURN NEW;
 END;

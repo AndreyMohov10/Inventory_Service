@@ -11,7 +11,7 @@ import java.math.BigDecimal
 import java.time.ZonedDateTime
 import java.util.UUID
 
-data class ProductDto(
+data class ProductResponse(
     @field:Schema(description = "id товара", accessMode = Schema.AccessMode.READ_ONLY)
     val id: UUID,
 
@@ -49,17 +49,18 @@ data class ProductDto(
     @field:PastOrPresent(message = "время обновления не должно быть в будущем")
     val updatedAt: ZonedDateTime
 ) {
-
-    fun from(entity: Product) {
-        ProductDto(
-            entity.id!!,
-            entity.sku!!,
-            entity.name!!,
-            entity.description,
-            entity.price!!,
-            entity.quantity!!,
-            ZonedDateTime.from(entity.createdAt!!),
-            ZonedDateTime.from(entity.updatedAt!!)
-        )
+    companion object {
+        fun from(entity: Product): ProductResponse {
+            return ProductResponse(
+                entity.id,
+                entity.sku,
+                entity.name,
+                entity.description,
+                entity.price,
+                entity.quantity,
+                entity.createdAt,
+                entity.updatedAt
+            )
+        }
     }
 }
