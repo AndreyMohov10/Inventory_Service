@@ -22,7 +22,6 @@ import java.math.BigDecimal
 import java.time.ZonedDateTime
 import java.util.*
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
 
 
 @ExtendWith(MockitoExtension::class)
@@ -200,7 +199,7 @@ class ProductServiceTest {
 
         whenever {
             productRepository.findAll()
-        }.thenAnswer { invocationOnMock ->
+        }.thenAnswer { _ ->
             return@thenAnswer map
                 .map { it.value }
 

@@ -1,14 +1,13 @@
 package org.example.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.kotlinModule
+import org.example.dto.DeltaRequest
 import org.example.dto.ProductRequest
 import org.example.dto.ProductResponse
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.DynamicPropertyRegistry
@@ -19,24 +18,19 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.patch
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
-import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.web.context.WebApplicationContext
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureMockMvc
 @Testcontainers
 class ProductControllerIntegrationTest {
     @Autowired
-    private lateinit var context: WebApplicationContext
+    private lateinit var objectMapper: ObjectMapper
 
-    private val objectMapper: ObjectMapper = ObjectMapper().apply {
-        registerModule(kotlinModule())
-        registerModule(JavaTimeModule())
-    }
-
+    @Autowired
     private lateinit var mockMvc: MockMvc
 
     private val baseProduct = ProductRequest(
@@ -46,14 +40,6 @@ class ProductControllerIntegrationTest {
         price = BigDecimal(0),
         quantity = 0
     )
-
-    @BeforeEach
-    fun setUp() {
-        mockMvc = MockMvcBuilders
-            .webAppContextSetup(context)
-            .build()
-    }
-
 
     companion object {
         @Container
@@ -89,7 +75,7 @@ class ProductControllerIntegrationTest {
             quantity = 10
         )
 
-        mockMvc.post("$baseUrl/") {
+        mockMvc.post(baseUrl) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
         }.andExpect {
@@ -108,7 +94,7 @@ class ProductControllerIntegrationTest {
     @Test
     @DisplayName("Получение списка продуктов с фильтрацией по кириллическому параметру и пагинацией")
     fun `should get products with search and pagination`() {
-        mockMvc.get("$baseUrl/") {
+        mockMvc.get(baseUrl) {
             param("строка поиска по имени", "Laptop")
             param("страница", "0")
             param("размер одной страницы", "10")
@@ -123,7 +109,7 @@ class ProductControllerIntegrationTest {
     @Test
     @DisplayName("Получение продукта по ID")
     fun `should get product by id`() {
-        val response = mockMvc.post("$baseUrl/") {
+        val response = mockMvc.post(baseUrl) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(baseProduct)
         }.andReturn().response.contentAsString
@@ -150,7 +136,7 @@ class ProductControllerIntegrationTest {
     @Test
     @DisplayName("Обновление продукта по ID")
     fun `should update product`() {
-        val response = mockMvc.post("$baseUrl/") {
+        val response = mockMvc.post(baseUrl) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(baseProduct)
         }.andReturn().response.contentAsString
@@ -179,7 +165,7 @@ class ProductControllerIntegrationTest {
     @Test
     @DisplayName("Обновление количества товара (delta)")
     fun `should update quantity`() {
-        val response = mockMvc.post("$baseUrl/") {
+        val response = mockMvc.post(baseUrl) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(baseProduct)
         }.andReturn().response.contentAsString
@@ -189,7 +175,7 @@ class ProductControllerIntegrationTest {
 
         mockMvc.patch("$baseUrl/$id/quantity") {
             contentType = MediaType.APPLICATION_JSON
-            content = objectMapper.writeValueAsString(delta)
+            content = objectMapper.writeValueAsString(DeltaRequest(delta))
         }.andExpect {
             status { isOk() }
         }
@@ -202,7 +188,7 @@ class ProductControllerIntegrationTest {
     @Test
     @DisplayName("Удаление продукта по ID")
     fun `should delete product`() {
-        val response = mockMvc.post("$baseUrl/") {
+        val response = mockMvc.post(baseUrl) {
             contentType = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(baseProduct)
         }.andReturn().response.contentAsString

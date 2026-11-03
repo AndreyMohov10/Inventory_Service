@@ -11,13 +11,12 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.orm.ObjectOptimisticLockingFailureException
-import org.springframework.resilience.annotation.Retryable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
-open class ProductService {
+class ProductService {
     @Autowired
     private lateinit var repository: ProductRepository
 
@@ -70,24 +69,28 @@ open class ProductService {
         repository.saveAndFlush(product)
     }
 
-    @Retryable(
-        value = [ObjectOptimisticLockingFailureException::class],
-        maxRetries = 3,
-        maxDelay = 500,
-        delay = 50,
-        multiplier = 2.0,
-    )
+
     @Transactional
     fun changeQuantity(id: UUID, delta: Int): ProductResponse {
-        val product = repository.findByIdOrNull(id)
-            ?: throw NotFoundException("не существует товара с id = $id")
-        product.quantity += delta
-        if (product.quantity < 0) {
-            throw NegativeQuantityException("Невалидное обновление: остаток не должен быть отрицательным")
+        var i = 0
+        while (true) {
+            try {
+                val product = repository.findByIdOrNull(id)
+                    ?: throw NotFoundException("не существует товара с id = $id")
+                product.quantity += delta
+                if (product.quantity < 0) {
+                    throw NegativeQuantityException("Невалидное обновление: остаток не должен быть отрицательным")
+                }
+                return ProductResponse.from(
+                    repository.saveAndFlush(product)
+                )
+            } catch (e: ObjectOptimisticLockingFailureException) {
+                i++
+                if (i >= 3) {
+                    throw e
+                }
+            }
         }
-        return ProductResponse.from(
-            repository.saveAndFlush(product)
-        )
     }
 
     fun deleteProduct(id: UUID) {

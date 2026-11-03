@@ -2,6 +2,7 @@ package org.example.controller
 
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
+import org.example.dto.DeltaRequest
 import org.example.dto.ProductRequest
 import org.example.dto.ProductResponse
 import org.example.service.ProductService
@@ -25,23 +26,23 @@ class ProductController {
     @Autowired
     private lateinit var productService: ProductService
 
-    @PostMapping("/")
+    @PostMapping("")
     @Operation(summary = "создает новый товар")
     fun createProduct(@Valid @RequestBody productDto: ProductRequest): ResponseEntity<ProductResponse> {
         val ans = productService.createProduct(productDto)
         return ResponseEntity.status(201).body(ans)
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     @Operation(
         summary = "ищет товар по названию",
         description = "получает товары с пагинацией по вхождению в название." +
                 "\n Если параметра name нет то не фильтрует. Если одного из page и size нет - то выводит все"
     )
     fun getProducts(
-        @RequestParam("строка поиска по имени") name: String?,
-        @RequestParam("страница") page: Int?,
-        @RequestParam("размер одной страницы") size: Int?
+        @RequestParam name: String?,
+        @RequestParam page: Int?,
+        @RequestParam size: Int?
     ): ResponseEntity<List<ProductResponse>> {
         val ans = productService.getByName(name, page, size)
         return ResponseEntity.status(200).body(ans)
@@ -70,9 +71,9 @@ class ProductController {
     @PatchMapping("/{id}/quantity")
     fun updateQuantity(
         @PathVariable id: UUID,
-        @RequestBody(required = true) delta: Int
+        @RequestBody(required = true) deltaRequest: DeltaRequest
     ): ResponseEntity<Void> {
-        productService.changeQuantity(id, delta)
+        productService.changeQuantity(id, deltaRequest.delta)
         return ResponseEntity.status(200).build()
     }
 
