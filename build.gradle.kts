@@ -34,11 +34,3 @@ tasks.test {
 kotlin {
     jvmToolchain(23)
 }
-
-configurations.all {
-    resolutionStrategy {
-        force("com.fasterxml.jackson.core:jackson-databind:2.21.8")
-        force("com.fasterxml.jackson.core:jackson-core:2.21.8")
-        force("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.21.8")
-    }
-}

@@ -25,7 +25,7 @@ class GlobalExceptionHandler {
             ex.message,
             request.requestURI
         )
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body)
     }
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
@@ -56,7 +56,7 @@ class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(SQLException::class)
-    fun handleSqlException(ex: SQLException, request: HttpServletRequest) : ResponseEntity<ErrorResponse> {
+    fun handleSqlException(ex: SQLException, request: HttpServletRequest): ResponseEntity<ErrorResponse> {
         val status = when (ex.sqlState) {
             "23505" -> {
                 HttpStatus.CONFLICT
@@ -64,10 +64,6 @@ class GlobalExceptionHandler {
 
             "23503" -> {
                 HttpStatus.CONFLICT
-            }
-
-            "P0001" -> {
-                HttpStatus.UNPROCESSABLE_ENTITY
             }
 
             else -> {
@@ -81,7 +77,24 @@ class GlobalExceptionHandler {
             ex.localizedMessage?.lines()?.firstOrNull() ?: "",
             request.requestURI
         )
+        if (status == HttpStatus.INTERNAL_SERVER_ERROR) {
+            return ResponseEntity.status(status).body(null)
+        }
         return ResponseEntity.status(status)
             .body(body)
+    }
+
+    @ExceptionHandler(NegativeQuantityException::class)
+    fun handleNegativeQuantityException(ex: NegativeQuantityException, request: HttpServletRequest)
+            : ResponseEntity<ErrorResponse>{
+        val status = HttpStatus.UNPROCESSABLE_ENTITY
+        val body = ErrorResponse(
+            timestamp = ZonedDateTime.now(),
+            status.value(),
+            status.reasonPhrase,
+            ex.message ?: "",
+            request.requestURI
+        )
+        return ResponseEntity.status(status).body(body)
     }
 }

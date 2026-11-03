@@ -10,4 +10,3 @@ object InventoryServiceApp {
         SpringApplication.run(InventoryServiceApp::class.java, *args)
     }
 }
-
