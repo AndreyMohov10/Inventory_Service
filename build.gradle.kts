@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "2.2.10"
+    kotlin("plugin.spring") version "2.2.10"
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.6"
 }
@@ -25,6 +26,10 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql:42.7.14")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.testcontainers:junit-jupiter:1.20.1")
+    testImplementation("org.testcontainers:postgresql:1.20.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation(kotlin("test"))
 }
 

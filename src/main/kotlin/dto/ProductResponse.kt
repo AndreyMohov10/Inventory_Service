@@ -52,14 +52,14 @@ data class ProductResponse(
     companion object {
         fun from(entity: Product): ProductResponse {
             return ProductResponse(
-                entity.id,
-                entity.sku,
-                entity.name,
+                entity.id!!,
+                entity.sku!!,
+                entity.name!!,
                 entity.description,
-                entity.price,
+                entity.price!!,
                 entity.quantity,
-                entity.createdAt,
-                entity.updatedAt
+                entity.createdAt!!,
+                entity.updatedAt!!
             )
         }
     }

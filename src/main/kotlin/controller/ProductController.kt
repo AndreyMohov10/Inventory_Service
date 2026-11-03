@@ -1,5 +1,6 @@
 package org.example.controller
 
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.example.dto.ProductRequest
 import org.example.dto.ProductResponse
@@ -22,25 +23,32 @@ import java.util.UUID
 @RequestMapping("/api/v1/products")
 class ProductController {
     @Autowired
-    lateinit var productService: ProductService
+    private lateinit var productService: ProductService
 
     @PostMapping("/")
+    @Operation(summary = "создает новый товар")
     fun createProduct(@Valid @RequestBody productDto: ProductRequest): ResponseEntity<ProductResponse> {
         val ans = productService.createProduct(productDto)
         return ResponseEntity.status(201).body(ans)
     }
 
     @GetMapping("/")
+    @Operation(
+        summary = "ищет товар по названию",
+        description = "получает товары с пагинацией по вхождению в название." +
+                "\n Если параметра name нет то не фильтрует. Если одного из page и size нет - то выводит все"
+    )
     fun getProducts(
-        @RequestParam name: String?,
-        @RequestParam page: Int?,
-        @RequestParam size: Int?
+        @RequestParam("строка поиска по имени") name: String?,
+        @RequestParam("страница") page: Int?,
+        @RequestParam("размер одной страницы") size: Int?
     ): ResponseEntity<List<ProductResponse>> {
         val ans = productService.getByName(name, page, size)
         return ResponseEntity.status(200).body(ans)
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "получает товар по id")
     fun getProduct(
         @PathVariable id: UUID
     ): ResponseEntity<ProductResponse> {
@@ -48,6 +56,7 @@ class ProductController {
         return ResponseEntity.status(200).body(ans)
     }
 
+    @Operation(summary = "обновляет товар по id")
     @PutMapping("/{id}")
     fun updateProduct(
         @PathVariable id: UUID,
@@ -57,15 +66,17 @@ class ProductController {
         return ResponseEntity.status(200).build()
     }
 
+    @Operation(summary = "обновляет количество товара на delta")
     @PatchMapping("/{id}/quantity")
     fun updateQuantity(
         @PathVariable id: UUID,
-        @RequestBody delta: Int
+        @RequestBody(required = true) delta: Int
     ): ResponseEntity<Void> {
         productService.changeQuantity(id, delta)
         return ResponseEntity.status(200).build()
     }
 
+    @Operation(summary = "удаляет продукт по id")
     @DeleteMapping("/{id}")
     fun deleteProduct(
         @PathVariable id: UUID
