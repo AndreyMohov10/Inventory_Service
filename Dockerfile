@@ -1,5 +1,5 @@
 
-FROM eclipse-temurin:23-jdk-alpine AS builder
+FROM eclipse-temurin:17-jdk-alpine AS builder
 WORKDIR /workspace
 
 COPY gradlew .
@@ -12,7 +12,7 @@ RUN ./gradlew dependencies --no-daemon
 COPY src src
 RUN ./gradlew bootJar --no-daemon -x test
 
-FROM eclipse-temurin:23-jre-alpine
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
